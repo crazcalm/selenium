@@ -18,7 +18,6 @@ import (
 	"time"
 
 	"github.com/blang/semver"
-	"github.com/google/go-cmp/cmp"
 	"github.com/tebeka/selenium/chrome"
 	"github.com/tebeka/selenium/firefox"
 	"github.com/tebeka/selenium/log"
@@ -671,7 +670,7 @@ func testExtendedErrorMessage(t *testing.T, c config) {
 	case c.browser == "firefox" && c.seleniumVersion.Major == 0:
 		want = "unknown command"
 	default:
-		want = "invalid session ID:"
+		want = "invalid session"
 	}
 	if err := wd.Close(); err == nil || !strings.HasPrefix(err.Error(), want) {
 		t.Fatalf("Got error %q, expected error to start with %q", err, want)
@@ -1233,8 +1232,20 @@ func testAddCookie(t *testing.T, c config) {
 		t.Fatalf("wd.GetCookies() = %v, missing cookie %q", cookies, want.Name)
 	}
 
-	if diff := cmp.Diff(want, got); diff != "" {
-		t.Fatalf("wd.GetCookies() returned diff (-want/+got):\n%s", diff)
+	if !strings.EqualFold(want.Name, got.Name) {
+		t.Fatalf("Expected Name to be '%s', but got '%s'", want.Name, got.Name)
+	}
+
+	if !strings.EqualFold(want.Value, got.Value) {
+		t.Fatalf("Expected Value to be '%s', but got '%s'", want.Value, got.Value)
+	}
+
+	if want.Expiry != got.Expiry {
+		t.Fatalf("Expected Expery to be '%d', but got '%d'", want.Expiry, got.Expiry)
+	}
+
+	if !strings.EqualFold(want.Domain, got.Domain) {
+		t.Fatalf("Expected Domain to be '%s', but got '%s'", want.Domain, got.Domain)
 	}
 }
 
